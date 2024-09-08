@@ -10,3 +10,7 @@ So I banged this lil guy out. It was actually easier than I'd expected.
 
 **Windows:** Ctrl+Shift+0  
 **Mac:** Command+Shift+0
+
+<br>
+
+![Screenshot of a Screenshot](./viewport_capture_2024-09-08_04_37.png)

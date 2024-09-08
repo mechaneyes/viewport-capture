@@ -16,8 +16,8 @@ chrome.action.onClicked.addListener((tab) => {
 
     // Generate timestamp
     const now = new Date();
-    const timestamp = now.toISOString().slice(0, 19).replace("T", "_");
-    const filename = `viewport_screenshot_${timestamp}.png`;
+    const timestamp = now.toISOString().slice(0, 16).replace("T", "_");
+    const filename = `viewport_capture_${timestamp}.png`;
 
     // Inject and execute content script
     chrome.scripting
