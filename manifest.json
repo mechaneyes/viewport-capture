@@ -1,23 +1,32 @@
 {
-  "manifest_version": 3,
-  "name": "📸 ViewportShot",
-  "version": "1.0",
-  "description": "Capture screenshot of current viewport with timestamp",
-  "permissions": ["activeTab", "scripting"],
-  "action": {
-    "default_title": "Take viewport screenshot",
-    "default_icon": {
+    "manifest_version": 3,
+    "name": "📸 ViewportShot",
+    "version": "1.0",
+    "description": "Capture screenshot of current viewport with timestamp",
+    "permissions": ["activeTab", "scripting"],
+    "action": {
+      "default_title": "Take viewport screenshot",
+      "default_icon": {
+        "16": "vpsIcon16.png",
+        "48": "vpsIcon48.png",
+        "128": "vpsIcon128.png"
+      }
+    },
+    "icons": {
       "16": "vpsIcon16.png",
       "48": "vpsIcon48.png",
       "128": "vpsIcon128.png"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "commands": {
+      "_execute_action": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+0",
+          "mac": "Command+Shift+0"
+        },
+        "description": "Take a screenshot of the current viewport"
+      }
     }
-  },
-  "icons": {
-    "16": "vpsIcon16.png",
-    "48": "vpsIcon48.png",
-    "128": "vpsIcon128.png"
-  },
-  "background": {
-    "service_worker": "background.js"
   }
-}
