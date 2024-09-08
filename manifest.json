@@ -1,11 +1,11 @@
 {
     "manifest_version": 3,
-    "name": "📸 ViewportShot",
+    "name": "📸 Viewport Capture",
     "version": "1.0",
-    "description": "Capture screenshot of current viewport with timestamp",
+    "description": "Capture current viewport with timestamp",
     "permissions": ["activeTab", "scripting"],
     "action": {
-      "default_title": "Take viewport screenshot",
+      "default_title": "Capture Visible in Viewport",
       "default_icon": {
         "16": "vpsIcon16.png",
         "48": "vpsIcon48.png",
