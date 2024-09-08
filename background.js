@@ -16,7 +16,19 @@ chrome.action.onClicked.addListener((tab) => {
 
     // Generate timestamp
     const now = new Date();
-    const timestamp = now.toISOString().slice(0, 16).replace("T", "_");
+    const easternTime = new Date(
+      now.toLocaleString("en-US", { timeZone: "America/New_York" })
+    );
+    const timestamp =
+      easternTime.getFullYear() +
+      "-" +
+      String(easternTime.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(easternTime.getDate()).padStart(2, "0") +
+      "_" +
+      String(easternTime.getHours()).padStart(2, "0") +
+      "-" +
+      String(easternTime.getMinutes()).padStart(2, "0");
     const filename = `viewport_capture_${timestamp}.png`;
 
     // Inject and execute content script
