@@ -1,61 +1,64 @@
-// background.js
-chrome.action.onClicked.addListener((tab) => {
-  if (tab.url.startsWith("chrome://")) {
-    chrome.action.setTitle({
-      tabId: tab.id,
-      title: "Cannot screenshot chrome:// pages",
+async function injectContentScript(tabId) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ["content-script.js"],
     });
-    return;
+  } catch (err) {
+    console.error("Failed to inject content script:", err);
+    throw err;
   }
+}
 
-  chrome.tabs.captureVisibleTab(null, {}, (dataUrl) => {
-    if (chrome.runtime.lastError) {
-      console.error(chrome.runtime.lastError);
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    // Check for restricted pages
+    if (
+      tab.url.startsWith("chrome://") ||
+      tab.url.startsWith("chrome-extension://")
+    ) {
+      chrome.action.setTitle({
+        tabId: tab.id,
+        title: "Cannot screenshot this page type",
+      });
       return;
     }
 
-    // Generate timestamp
+    // Inject content script first
+    await injectContentScript(tab.id);
+
+    // Capture screenshot
+    const dataUrl = await chrome.tabs.captureVisibleTab(null, {
+      format: "png",
+      quality: 100,
+    });
+
+    // Generate timestamp in ET
     const now = new Date();
-    const easternTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/New_York" })
-    );
-    const timestamp =
-      easternTime.getFullYear() +
-      "-" +
-      String(easternTime.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(easternTime.getDate()).padStart(2, "0") +
-      "_" +
-      String(easternTime.getHours()).padStart(2, "0") +
-      "-" +
-      String(easternTime.getMinutes()).padStart(2, "0");
+    const easternTime = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(now);
+
+    // Format timestamp for filename
+    const timestamp = easternTime
+      .replace(/(\d+)\/(\d+)\/(\d+),\s(\d+):(\d+)/, "$3-$1-$2_$4-$5")
+      .replace(/,/g, "");
+
     const filename = `viewport_capture_${timestamp}.png`;
 
-    // Inject and execute content script
-    chrome.scripting
-      .executeScript({
-        target: { tabId: tab.id },
-        function: downloadScreenshot,
-        args: [dataUrl, filename],
-      })
-      .then(() => {
-        chrome.action.setTitle({ tabId: tab.id, title: "Screenshot saved" });
-      })
-      .catch((error) => {
-        console.error("Error executing script: ", error);
-        chrome.action.setTitle({
-          tabId: tab.id,
-          title: "Error saving screenshot",
-        });
-      });
-  });
+    // Send to content script
+    await chrome.tabs.sendMessage(tab.id, {
+      action: "download",
+      dataUrl: dataUrl,
+      filename: filename,
+    });
+  } catch (error) {
+    console.error("Screenshot capture failed:", error);
+  }
 });
-
-function downloadScreenshot(dataUrl, filename) {
-  const link = document.createElement("a");
-  link.href = dataUrl;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
