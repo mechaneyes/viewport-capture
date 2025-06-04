@@ -33,6 +33,19 @@ chrome.action.onClicked.addListener(async (tab) => {
       quality: 100,
     });
 
+    // Get the viewport dimensions
+    const [{ result: viewport }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        return {
+          width: document.documentElement.clientWidth,
+          height: window.innerHeight,
+          scrollbarWidth
+        };
+      }
+    });
+
     // Generate timestamp in ET
     const now = new Date();
     const easternTime = new Intl.DateTimeFormat("en-US", {
@@ -42,12 +55,13 @@ chrome.action.onClicked.addListener(async (tab) => {
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
       hour12: false,
     }).format(now);
 
     // Format timestamp for filename
     const timestamp = easternTime
-      .replace(/(\d+)\/(\d+)\/(\d+),\s(\d+):(\d+)/, "$3-$1-$2_$4-$5")
+      .replace(/(\d+)\/(\d+)\/(\d+),\s(\d+):(\d+):(\d+)/, "$3-$1-$2_$4-$5-$6")
       .replace(/,/g, "");
 
     const filename = `viewport_capture_${timestamp}.png`;
@@ -57,8 +71,19 @@ chrome.action.onClicked.addListener(async (tab) => {
       action: "download",
       dataUrl: dataUrl,
       filename: filename,
+      viewport: viewport
     });
   } catch (error) {
     console.error("Screenshot capture failed:", error);
   }
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "saveToDownloads") {
+        chrome.downloads.download({
+            url: request.dataUrl,
+            filename: request.filename,
+            saveAs: false
+        });
+    }
 });

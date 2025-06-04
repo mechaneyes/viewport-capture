@@ -1,10 +1,23 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "download") {
-      // Handle download
-      downloadScreenshot(request.dataUrl, request.filename);
+      // Crop out scrollbar
+      const canvas = document.createElement('canvas');
+      canvas.width = request.viewport.width;
+      canvas.height = request.viewport.height;
+      const ctx = canvas.getContext('2d');
       
-      // Handle clipboard
-      copyImageToClipboard(request.dataUrl);
+      const img = new Image();
+      img.onload = () => {
+          ctx.drawImage(img, 0, 0, request.viewport.width, request.viewport.height, 0, 0, request.viewport.width, request.viewport.height);
+          const croppedDataUrl = canvas.toDataURL('image/png');
+          
+          // Handle download
+          downloadScreenshot(croppedDataUrl, request.filename);
+          
+          // Handle clipboard
+          copyImageToClipboard(croppedDataUrl);
+      };
+      img.src = request.dataUrl;
   }
 });
 
