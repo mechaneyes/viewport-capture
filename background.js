@@ -1,5 +1,14 @@
 async function injectContentScript(tabId) {
   try {
+    // Check if content script is already injected by trying to send a test message
+    try {
+      await chrome.tabs.sendMessage(tabId, { action: "ping" });
+      // If we get here, content script is already injected
+      return;
+    } catch (err) {
+      // Content script not injected yet, proceed with injection
+    }
+    
     await chrome.scripting.executeScript({
       target: { tabId: tabId },
       files: ["content-script.js"],

@@ -1,4 +1,10 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "ping") {
+    // Respond to ping to indicate content script is already injected
+    sendResponse({ status: "ok" });
+    return;
+  }
+  
   if (request.action === "download") {
       // Crop out scrollbar
       const canvas = document.createElement('canvas');
